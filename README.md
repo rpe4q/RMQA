@@ -13,3 +13,8 @@
 - Bogus
 - Newtonsoft.Json
 - CommunityToolkit.Mvvm
+
+## Инструменты:
+- Visual Studio 2022
+- Документации с Avalonia и др.
+- Алиса AI
