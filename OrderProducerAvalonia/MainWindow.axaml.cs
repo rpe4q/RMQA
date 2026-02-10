@@ -1,7 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Interactivity;
 using MsBox.Avalonia;
-using Enu = MsBox.Avalonia.Enums;
+using BoxEnum = MsBox.Avalonia.Enums;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -22,6 +22,7 @@ namespace OrderProducerAvalonia
         private RabbitMQProducer? _producer;
         private ILogger? _logger;
         private AppDbContext context;
+        public string PlaceholderText { get; set; }
         public MainWindow()
         {
             InitializeComponent();
@@ -30,6 +31,7 @@ namespace OrderProducerAvalonia
             context = new AppDbContext();
             context.Database.EnsureCreated();
 
+            ViewModel.ProductNames = ["Latte", "Cappuccino", "Flat White", "Mocha", "Frappe", "Turkish", "Espresso", "Americano", "Raf"];
             this.DataContext = ViewModel;
 
             // загрузка данных и привязка
@@ -51,7 +53,7 @@ namespace OrderProducerAvalonia
             this.Loaded += async (sender, e) => await InitializeRabbitMQAsync();
         }
 
-        private void LoadData()
+        private async Task LoadData()
         {
             try
             {
@@ -76,8 +78,10 @@ namespace OrderProducerAvalonia
             catch (Exception ex)
             {
                 _logger?.Error(ex, "Ошибка при загрузке данных из БД");
-                MessageBoxManager.GetMessageBoxStandard($"Ошибка загрузки данных: {ex.Message}", "Ошибка",
-                    Enu.ButtonEnum.Ok, Enu.Icon.Error);
+                var DataLoadErrBox = MessageBoxManager.GetMessageBoxStandard(
+                    "Ошибка", $"Ошибка загрузки данных: {ex.Message}",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+                await DataLoadErrBox.ShowAsync();
             }
         }
 
@@ -92,10 +96,11 @@ namespace OrderProducerAvalonia
             catch (Exception ex)
             {
                 _logger.Error(ex, "Ошибка подключения к RabbitMQ");
-                MessageBoxManager.GetMessageBoxStandard(
-                    $"Не удалось подключиться к RabbitMQ!\nОшибка: {ex.Message}",
+                var ConnErrBox = MessageBoxManager.GetMessageBoxStandard(
                     "Ошибка подключения",
-                    Enu.ButtonEnum.Ok, Enu.Icon.Error);
+                    $"Не удалось подключиться к RabbitMQ!\nОшибка: {ex.Message}",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+                await ConnErrBox.ShowAsync();
             }
         }
         private void Random_Click(object sender, RoutedEventArgs e)
@@ -105,12 +110,11 @@ namespace OrderProducerAvalonia
                 .Person
                 .FirstName;
             // Генератор продуктов
-            var productNames = new[] { "Latte", "Cappuccino", "Flat White", "Mocha", "Frappe", "Turkish", "Espresso", "Americano", "Raf" };
-            var productFaker = new Faker()
-                .PickRandom(productNames);
+            //var productFaker = new Faker()
+              //  .PickRandom(productNames);
             // Генерация заказа
             txtCustomer.Text = customerFaker;
-            txtProduct.Text = productFaker;
+            //txtProduct.Text = productFaker;
             txtQuantity.Text = new Faker().Random.Int(1, 10).ToString();
         }
 
@@ -118,7 +122,10 @@ namespace OrderProducerAvalonia
         {
             if (_producer == null)
             {
-                MessageBoxManager.GetMessageBoxStandard("!!!", "RabbitMQ не инициализирован\nПроверьте подключение к серверу!");
+                var ServNonInitBox = MessageBoxManager.GetMessageBoxStandard(
+                    "!!!", "RabbitMQ не инициализирован\nПроверьте подключение к серверу!",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Warning);
+                await ServNonInitBox.ShowAsync();
                 return;
             }
 
@@ -126,7 +133,10 @@ namespace OrderProducerAvalonia
             var product = txtProduct.Text.Trim();
             if (!int.TryParse(txtQuantity.Text.Trim(), out int quantity) || quantity <= 0)
             {
-                MessageBoxManager.GetMessageBoxStandard("Введите корректное количество!", "Введите корректное количество!");
+                var WrongValBox = MessageBoxManager.GetMessageBoxStandard(
+                    "Введите корректное количество!", "Введите корректное количество!",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+                await WrongValBox.ShowAsync();
                 return;
             }
 
@@ -146,17 +156,28 @@ namespace OrderProducerAvalonia
             {
                 await _producer.SendOrderMessage(message);
                 _logger.Information("Заказ отправлен: {@Order}", message);
-                MessageBoxManager.GetMessageBoxStandard("!!!", "Заказ успешно отправлен в очередь!");
+                var OrderCompleteBox = MessageBoxManager.GetMessageBoxStandard(
+                    "!!!", "Заказ успешно отправлен в очередь!",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Success);
+                await OrderCompleteBox.ShowAsync();
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Ошибка при отправке заказа");
-                MessageBoxManager.GetMessageBoxStandard("!!!", $"Ошибка при отправке заказа: {ex.Message}");
+                var OrderErrorBox = MessageBoxManager.GetMessageBoxStandard(
+                    "!!!", $"Ошибка при отправке заказа: {ex.Message}",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+                await OrderErrorBox.ShowAsync();
             }
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             context.Dispose();
+        }
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            this.Hide();
+            e.Cancel = true;
         }
     }
     public class RabbitMQProducer

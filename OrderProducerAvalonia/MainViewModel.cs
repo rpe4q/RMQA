@@ -10,7 +10,7 @@ namespace OrderProducerAvalonia
         [ObservableProperty]
         private ObservableCollection<OrderMessage> orders = new();
         // тут тоже магия - автоматически будет Orders - далее он и используется
-
+        public string[] ProductNames { get; set; }
 
         partial void OnOrdersChanged(ObservableCollection<OrderMessage> value)
         {
