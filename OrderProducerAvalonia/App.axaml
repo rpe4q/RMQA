@@ -9,6 +9,7 @@
                     ToolTipText="Avalonia Tray Icon ToolTip">
             <TrayIcon.Menu>
                 <NativeMenu>
+                    <NativeMenuItem Header="Open" Click="NativeMenuItem_Click_Open"/>
                     <NativeMenuItem Header="Exit" Click="NativeMenuItem_Click_1"/>
                 </NativeMenu>
             </TrayIcon.Menu>

@@ -27,5 +27,11 @@ namespace OrderProducerAvalonia
         {
             Environment.Exit(0);
         }
+
+        private void NativeMenuItem_Click_Open(object? sender, EventArgs e)
+        {
+            MainWindow wOpen = new();
+            wOpen.Show();
+        }
     }
 }
