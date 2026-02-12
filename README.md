@@ -9,7 +9,6 @@
 - Avalonia
 - SQLite
 - EF Core
-- Serilog (возможно его не будет)
 - Bogus
 - Newtonsoft.Json
 - CommunityToolkit.Mvvm
