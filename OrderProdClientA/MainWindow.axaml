@@ -21,7 +21,7 @@
                       PlaceholderText="Продукт" HorizontalAlignment="Stretch" 
                       ItemsSource="{Binding ProductNames}"/>
             <TextBox x:Name="txtQuantity" Watermark="Количество" Margin="0,0,0,20"/>
-            <Button Content="Я ощущаю себя везучим" Click="Random_Click" 
+            <Button Content="Мне повезёт!" Click="Random_Click" 
                     HorizontalAlignment="Center" Margin="0,10,0,10"/>
             <Button Content="Отправить" Click="Send_Click" HorizontalAlignment="Center"/>
             <DataGrid Name="DataGridOrders" Margin="20" Height="256"
