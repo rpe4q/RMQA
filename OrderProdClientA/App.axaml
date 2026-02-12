@@ -1,4 +1,4 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="OrderProdClientA.App"
              RequestedThemeVariant="Default">
@@ -6,13 +6,13 @@
     <TrayIcon.Icons>
         <TrayIcons>
             <TrayIcon Icon="/Assets/avalonia-logo.ico" 
-                    ToolTipText="Avalonia Tray Icon ToolTip">
-            <TrayIcon.Menu>
-                <NativeMenu>
-                    <NativeMenuItem Header="Hide/Open" Click="NativeMenuItem_Click_HO"/>
-                    <NativeMenuItem Header="Exit" Click="NativeMenuItem_Click_1"/>
-                </NativeMenu>
-            </TrayIcon.Menu>
+                    ToolTipText="CoffeeMarket (Client)">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Свернуть/Открыть" Click="NativeMenuItem_Click_HO"/>
+                        <NativeMenuItem Header="Выйти" Click="NativeMenuItem_Click_1"/>
+                    </NativeMenu>
+                </TrayIcon.Menu>
             </TrayIcon>
         </TrayIcons>
     </TrayIcon.Icons>

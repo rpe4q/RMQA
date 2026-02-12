@@ -128,7 +128,7 @@ namespace OrderProdClientA
 
             var customer = txtCustomer.Text.Trim();
             var product = txtProduct.Text.Trim();
-            
+
             if (customer == "" || customer == null)
             {
                 var NoNameBox = MessageBoxManager.GetMessageBoxStandard(
@@ -168,9 +168,7 @@ namespace OrderProdClientA
             };
 
             // добавляем в коллекцию для DataGrid
-            //ViewModel.AddOrder(message);
-
-            ViewModel.CurrentOrder = message;
+            ViewModel.AddOrder(message);
 
             try
             {
@@ -194,10 +192,10 @@ namespace OrderProdClientA
         {
             context.Dispose();
         }
-        protected override void OnClosing(WindowClosingEventArgs e)
+        
+        private void Hide_Click(object? sender, RoutedEventArgs e)
         {
-            this.Hide();
-            e.Cancel = true;
+            CCliWin.Hide();
         }
     }
     public class RabbitMQProducer

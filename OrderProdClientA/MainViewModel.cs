@@ -11,8 +11,6 @@ namespace OrderProdClientA
         private ObservableCollection<OrderMessage> orders = new();
         // тут тоже магия - автоматически будет Orders - далее он и используется
 
-        [ObservableProperty]
-        private OrderMessage currentOrder;
         public string[] ProductNames { get; set; }
 
         partial void OnOrdersChanged(ObservableCollection<OrderMessage> value)
