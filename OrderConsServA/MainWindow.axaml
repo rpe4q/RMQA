@@ -1,0 +1,54 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:OrderConsServA"
+        xmlns:vm="clr-namespace:OrderConsServA.MainViewModel"
+        xmlns:models="clr-namespace:Models;assembly=Models"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="600"
+        x:Class="OrderConsServA.MainWindow"
+        x:DataType="local:MainViewModel"
+        Title="CoffeeMarket (Server)"
+        Width="450" Height="600">
+        <Window.DataContext>
+            <local:MainViewModel />
+        </Window.DataContext>
+    <TabControl>
+        <TabItem Header="Заказы">
+			<StackPanel>
+				<DataGrid Name="DataGridOrders" Margin="20" Height="500"
+                ItemsSource="{Binding Orders}"
+                AutoGenerateColumns="False" 
+                IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Покупатель" 
+                               Binding="{Binding CustomerName}" Width="*"/>
+                        <DataGridTextColumn Header="Товар" 
+                               Binding="{Binding ProductName}" Width="*"/>
+                        <DataGridTextColumn Header="Кол-во" 
+                               Binding="{Binding Quantity}" Width="*"/>
+                        <DataGridTextColumn Header="Цена" 
+                               Binding="{Binding Price}" Width="*"/>
+                        <DataGridTextColumn Header="Сумма" 
+                               Binding="{Binding TotalPrice}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </TabItem>
+		<TabItem Header="Консоль">
+			<Grid>
+                <Grid.RowDefinitions>
+					<RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="5"/>
+                </Grid.RowDefinitions>
+				<TextBox x:Name="ConsoleBox" Grid.Row="0" Grid.Column="0"
+                         FontFamily="Courier New" TextWrapping="Wrap"
+                         FontWeight="DemiBold" FontSize="16"/>
+            </Grid>
+        </TabItem>
+        <TabItem Header="Связь">
+			
+        </TabItem>
+    </TabControl>
+</Window>

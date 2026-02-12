@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace OrderProducerAvalonia
+namespace OrderProdClientA
 {
     public partial class MainWindow : Window
     {
@@ -109,12 +109,9 @@ namespace OrderProducerAvalonia
             var customerFaker = new Faker("ru")
                 .Person
                 .FirstName;
-            // Генератор продуктов
-            //var productFaker = new Faker()
-            //  .PickRandom(productNames);
+
             // Генерация заказа
             txtCustomer.Text = customerFaker;
-            //txtProduct.Text = productFaker;
             txtQuantity.Text = new Faker().Random.Int(1, 10).ToString();
         }
 
@@ -131,6 +128,26 @@ namespace OrderProducerAvalonia
 
             var customer = txtCustomer.Text.Trim();
             var product = txtProduct.Text.Trim();
+            
+            if (customer == "" || customer == null)
+            {
+                var NoNameBox = MessageBoxManager.GetMessageBoxStandard(
+                    "!!!", "Введите имя!",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Warning);
+                await NoNameBox.ShowAsync();
+                return;
+            }
+
+            if (product == "" || product == null)
+            {
+                var NoProductBox = MessageBoxManager.GetMessageBoxStandard(
+                    "!!!", "Выберите продукт!",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Warning);
+                await NoProductBox.ShowAsync();
+                return;
+            }
+
+
             if (!int.TryParse(txtQuantity.Text.Trim(), out int quantity) || quantity <= 0)
             {
                 var WrongValBox = MessageBoxManager.GetMessageBoxStandard(
@@ -139,6 +156,7 @@ namespace OrderProducerAvalonia
                 await WrongValBox.ShowAsync();
                 return;
             }
+
 
             var message = new OrderMessage
             {
@@ -150,7 +168,9 @@ namespace OrderProducerAvalonia
             };
 
             // добавляем в коллекцию для DataGrid
-            ViewModel.AddOrder(message);
+            //ViewModel.AddOrder(message);
+
+            ViewModel.CurrentOrder = message;
 
             try
             {
