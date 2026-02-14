@@ -1,5 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Models;
 using MsBox.Avalonia;
 using Newtonsoft.Json;
+using OrderConsServ.Converters;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
@@ -24,14 +27,97 @@ namespace OrderConsServA
     {
         internal MainViewModel ViewModel { get; } = new();
         private AppDbContext context;
+        static string message = "";
+        delegate void AppendText(string text);
+        private CancellationTokenSource cts = new CancellationTokenSource();
+        static async Task multicastSend(CancellationToken token)
+        {
+            var factory = new ConnectionFactory { HostName = "localhost" };
+            using var connection = await factory.CreateConnectionAsync();
+            using var channel = await connection.CreateChannelAsync();
+
+            await channel.QueueDeclareAsync(queue: "hello",
+                            durable: false,
+                            exclusive: false,
+                            autoDelete: false,
+                            arguments: null);
+            try
+            {
+                var body = Encoding.UTF8.GetBytes(message);
+                await channel.BasicPublishAsync(
+                    exchange: string.Empty,
+                    routingKey: "hello",
+                    body: body);
+                await Task.Delay(1000, token); // пауза 1 сек
+            }
+            catch (Exception ex)
+            {
+                // Логирование ошибки
+                var MsgSendErrBox = MessageBoxManager.GetMessageBoxStandard(
+                "!!!", $"Ошибка отправки сообщения!\n{ex.Message}",
+                BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+                await MsgSendErrBox.ShowAsync();
+                await Task.Delay(5000); // повтор через 5 сек
+            }
+        }
+        async Task Listner(CancellationToken token)
+        {
+            var factory = new ConnectionFactory { HostName = "localhost" };
+            using var connection = await factory.CreateConnectionAsync();
+            using var channel = await connection.CreateChannelAsync();
+
+            await channel.QueueDeclareAsync(queue: "hello",
+                            durable: false,
+                            exclusive: false,
+                            autoDelete: false,
+                            arguments: null);
+            var consumer = new AsyncEventingBasicConsumer(channel);
+            try
+            {
+                consumer.ReceivedAsync += (model, ea) =>
+                {
+                    var body = ea.Body.ToArray();
+                    var message = Encoding.UTF8.GetString(body);
+                    Dispatcher.UIThread.Invoke(() => AppendTextProc($"Client: {message}\r\n"));
+                    return Task.CompletedTask;
+                };
+            }
+            catch (Exception ex)
+            {
+                var MsgRecieveErrBox = MessageBoxManager.GetMessageBoxStandard(
+                    "!!!", $"Ошибка обработки сообщения!\n{ex.Message}",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+                await MsgRecieveErrBox.ShowAsync();
+            }
+
+            // Привязка потребителя к очереди
+            await channel.BasicConsumeAsync(
+                queue: "hello",
+                autoAck: true,
+                consumer: consumer
+            );
+
+            // Ожидание отмены
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(100, token);
+            }
+            void AppendTextProc(string text)
+            {
+                ChatBoxServ.Text = text;
+            }
+        }
         public MainWindow()
         {
+            //AvaloniaXamlLoader.Load(this);
+            //Resources.Add("BoolToBrushConverter", new BoolToBrushConverter());
             InitializeComponent();
             this.DataContext = ViewModel;
             _ = ServInit();
             context = new AppDbContext();
             context.Database.EnsureCreated();
             _ = LoadData();
+            Task.Run(() => Listner(cts.Token));
         }
         public async Task ServInit()
         {
@@ -74,6 +160,29 @@ namespace OrderConsServA
                     BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
                 await DataLoadErrBox.ShowAsync();
             }
+        }
+
+        private void ChatBoxServ_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            message = ChatBoxServ.Text;
+        }
+
+        private void SrvMsgSendBtn_Click(object? sender, RoutedEventArgs e)
+        {
+            Task.Run(() => multicastSend(cts.Token));
+        }
+
+        private void Hide_Click(object? sender, RoutedEventArgs e)
+        {
+            CSrvWin.Hide();
+        }
+
+        private void Random_Click(object? sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Send_Click(object? sender, RoutedEventArgs e)
+        {
         }
     }
     public class Worker : IHostedService, IDisposable
@@ -137,7 +246,7 @@ namespace OrderConsServA
                                 await SaveOrderAsync(message, ea.CancellationToken);
                             else
                                 AppendLog("Получено сообщение, но не удалось десериализовать");
-                                _logger.Warning("Получено сообщение, но не удалось десериализовать");
+                            _logger.Warning("Получено сообщение, но не удалось десериализовать");
                         }
                         catch (Exception ex)
                         {

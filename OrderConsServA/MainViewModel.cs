@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace OrderConsServA
 {
@@ -10,6 +12,33 @@ namespace OrderConsServA
     {
         [ObservableProperty]
         private ObservableCollection<OrderMessage> orders = new();
+
+        [ObservableProperty]
+        private ObservableCollection<ChatMessage> chatMessages = new();
+
+        [ObservableProperty]
+        private string newMessageText;
+        public ICommand SendMessageCommand => new RelayCommand(SendMessage);
+
+        public void AddMessage(string message, bool isUser = true)
+        {
+            ChatMessages.Add(new ChatMessage
+            {
+                Text = message,
+                IsUser = isUser,
+                Timestamp = DateTime.Now
+            });
+        }
+
+        public void SendMessage()
+        {
+            if (!string.IsNullOrEmpty(NewMessageText))
+            {
+                AddMessage(NewMessageText);
+                NewMessageText = "";
+                // Здесь логика отправки сообщения на сервер
+            }
+        }
 
         public MainViewModel()
         {
@@ -30,5 +59,11 @@ namespace OrderConsServA
                 Orders.Add(order);
             }
         }
+    }
+    public class ChatMessage
+    {
+        public string Text { get; set; }
+        public bool IsUser { get; set; }
+        public DateTime Timestamp { get; set; }
     }
 }

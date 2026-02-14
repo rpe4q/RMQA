@@ -3,37 +3,67 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="using:OrderConsServA"
+        xmlns:converters="using:OrderConsServA.Converters"
         xmlns:vm="clr-namespace:OrderConsServA.MainViewModel"
         xmlns:models="clr-namespace:Models;assembly=Models"
         mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="600"
         x:Class="OrderConsServA.MainWindow"
         x:DataType="local:MainViewModel"
+        x:Name="CSrvWin"
         Title="CoffeeMarket (Server)"
-        Width="450" Height="600">
+        Width="640" Height="480">
         <Window.DataContext>
             <local:MainViewModel />
         </Window.DataContext>
+          <Window.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Свернуть в трей" Click="Hide_Click"/>
+        </ContextMenu>
+      </Window.ContextMenu> 
     <TabControl>
         <TabItem Header="Заказы">
-			<StackPanel>
-				<DataGrid Name="DataGridOrders" Margin="20" Height="500"
+			<Grid>
+                <Grid.RowDefinitions>
+					<RowDefinition Height=".05"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="5"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+					<ColumnDefinition Width=".05"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width=".05"/>
+                </Grid.ColumnDefinitions>
+                <Button Content="Мне повезёт!" Click="Random_Click" 
+                        Grid.Row="3" Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                <Button Content="Отправить" Click="Send_Click"
+                        Grid.Row="3" Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+				<DataGrid Name="DataGridOrders"
+                Grid.Row="1" Grid.RowSpan="2"
+                Grid.Column="1" Grid.ColumnSpan="2"
                 ItemsSource="{Binding Orders}"
                 AutoGenerateColumns="False" 
-                IsReadOnly="True">
+                CanUserResizeColumns="True">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Покупатель" 
                                Binding="{Binding CustomerName}" Width="*"/>
                         <DataGridTextColumn Header="Товар" 
                                Binding="{Binding ProductName}" Width="*"/>
                         <DataGridTextColumn Header="Кол-во" 
-                               Binding="{Binding Quantity}" Width="*"/>
+                               Binding="{Binding Quantity, StringFormat='{}{0} шт.'}" Width="*"/>
                         <DataGridTextColumn Header="Цена" 
-                               Binding="{Binding Price}" Width="*"/>
-                        <DataGridTextColumn Header="Сумма" 
-                               Binding="{Binding TotalPrice}" Width="*"/>
+                                       Binding="{Binding Price, StringFormat={}{0} Cr}" Width="*"/>
+                                <DataGridTextColumn Header="Сумма" 
+                                       Binding="{Binding TotalPrice, StringFormat={}{0} Cr}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
-            </StackPanel>
+            </Grid>
         </TabItem>
 		<TabItem Header="Консоль">
 			<Grid>
@@ -48,7 +78,66 @@
             </Grid>
         </TabItem>
         <TabItem Header="Связь">
-			
+            <Grid>
+                <Grid.RowDefinitions>
+					<RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="5"/>
+                </Grid.RowDefinitions>
+				<TextBox x:Name="ChatBoxServ" Grid.Row="0" Grid.Column="0"
+                         TextWrapping="Wrap" FontSize="16"
+                         AcceptsReturn="True"
+                         TextChanged="ChatBoxServ_TextChanged"/>
+                <Button x:Name="SrvMsgSendBtn" Grid.Row="2"
+                        Content="Отправить" Click="SrvMsgSendBtn_Click" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                        HorizontalContentAlignment="Center"
+                        Margin="0,10,0,10"
+                        HotKey="Ctrl+Enter">
+                    </Button>
+            </Grid>
+            <!--> возможно будет допилено
+			<Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ScrollViewer Grid.Row="0">
+                            <ItemsControl ItemsSource="{Binding ChatMessages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="5"
+                                               Background="{Binding IsUser, 
+                                                   Converter={StaticResource BoolToBrushConverter}}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Text}" 
+                                                           Margin="10" 
+                                                           FontSize="14"/>
+                                                <TextBlock Text="{Binding Timestamp, StringFormat=t}" 
+                                                           FontSize="10" 
+                                                           HorizontalAlignment="Right" 
+                                                           Margin="10,0,10,5"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <TextBox Grid.Row="1"
+                                Text="{Binding NewMessageText, Mode=TwoWay}"
+                                Margin="10"
+                                Height="40"/>
+            
+                        <Button Grid.Row="1"
+                                Content="Отправить"
+                                Margin="10"
+                                HorizontalAlignment="Right"
+                                Command="{Binding SendMessageCommand}"/>
+                </Grid>
+                <-->
         </TabItem>
     </TabControl>
 </Window>

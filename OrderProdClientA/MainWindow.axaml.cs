@@ -1,18 +1,23 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using MsBox.Avalonia;
-using BoxEnum = MsBox.Avalonia.Enums;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Models;
+using MsBox.Avalonia;
+using Newtonsoft.Json;
+using OrderProdClientA.Converters;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using Serilog;
 using System;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using BoxEnum = MsBox.Avalonia.Enums;
 
 namespace OrderProdClientA
 {
@@ -23,14 +28,98 @@ namespace OrderProdClientA
         private ILogger? _logger;
         private AppDbContext context;
         public string PlaceholderText { get; set; }
+        static string message = "";
+        delegate void AppendText(string text);
+        private CancellationTokenSource cts = new CancellationTokenSource();
+        static async Task multicastSend(CancellationToken token)
+        {
+            var factory = new ConnectionFactory { HostName = "localhost" };
+            using var connection = await factory.CreateConnectionAsync();
+            using var channel = await connection.CreateChannelAsync();
+
+            await channel.QueueDeclareAsync(queue: "hello",
+                            durable: false,
+                            exclusive: false,
+                            autoDelete: false,
+                            arguments: null);
+            try
+            {
+                var body = Encoding.UTF8.GetBytes(message);
+                await channel.BasicPublishAsync(
+                    exchange: string.Empty,
+                    routingKey: "hello",
+                    body: body);
+                await Task.Delay(1000, token); // пауза 1 сек
+            }
+            catch (Exception ex)
+            {
+                // Логирование ошибки
+                var WrongValBox = MessageBoxManager.GetMessageBoxStandard(
+                "!!!", $"Ошибка чата!\n{ex.Message}",
+                BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+                await WrongValBox.ShowAsync();
+                await Task.Delay(5000); // повтор через 5 сек
+            }
+        }
+        async Task Listner(CancellationToken token)
+        {
+            var factory = new ConnectionFactory { HostName = "localhost" };
+            using var connection = await factory.CreateConnectionAsync();
+            using var channel = await connection.CreateChannelAsync();
+
+            await channel.QueueDeclareAsync(queue: "hello",
+                            durable: false,
+                            exclusive: false,
+                            autoDelete: false,
+                            arguments: null);
+            var consumer = new AsyncEventingBasicConsumer(channel);
+            try
+            {
+                consumer.ReceivedAsync += (model, ea) =>
+                {
+                    var body = ea.Body.ToArray();
+                    var message = Encoding.UTF8.GetString(body);
+                    Dispatcher.UIThread.Invoke(() => AppendTextProc($"CoffeeMarket: {message}\r\n"));
+                    return Task.CompletedTask;
+                };
+            }
+            catch (Exception ex)
+            {
+                var MsgRecieveErrBox = MessageBoxManager.GetMessageBoxStandard(
+                    "!!!", $"Ошибка обработки сообщения!\n{ex.Message}",
+                    BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+                await MsgRecieveErrBox.ShowAsync();
+            }
+
+            // Привязка потребителя к очереди
+            await channel.BasicConsumeAsync(
+                queue: "hello",
+                autoAck: true,
+                consumer: consumer
+            );
+
+            // Ожидание отмены
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(100, token);
+            }
+            void AppendTextProc(string text)
+            {
+                ChatBoxCli.Text = text;
+            }
+        }
         public MainWindow()
         {
+            //AvaloniaXamlLoader.Load(this);
+            //Resources.Add("BoolToBrushConverter", new BoolToBrushConverter());
+
             InitializeComponent();
 
             // в самом начале - потом Dispose
             context = new AppDbContext();
             context.Database.EnsureCreated();
 
+            Task.Run(() => Listner(cts.Token));
             ViewModel.ProductNames = ["Latte", "Cappuccino", "Flat White", "Mocha", "Frappe", "Turkish", "Espresso", "Americano", "Raf"];
             this.DataContext = ViewModel;
 
@@ -51,6 +140,7 @@ namespace OrderProdClientA
             // Используем Loaded для асинхронной инициализации
             // иначе м.б. deadlock с UI
             this.Loaded += async (sender, e) => await InitializeRabbitMQAsync();
+
         }
 
         private async Task LoadData()
@@ -73,7 +163,7 @@ namespace OrderProdClientA
 
                 _logger?.Information("Загружено {Count} заказов из БД", orderMessages.Count);
 
-                ViewModel.LoadOrders(orderMessages);
+                //ViewModel.LoadOrders(orderMessages);
             }
             catch (Exception ex)
             {
@@ -123,7 +213,6 @@ namespace OrderProdClientA
                     "!!!", "RabbitMQ не инициализирован\nПроверьте подключение к серверу!",
                     BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Warning);
                 await ServNonInitBox.ShowAsync();
-                return;
             }
 
             var customer = txtCustomer.Text.Trim();
@@ -163,12 +252,13 @@ namespace OrderProdClientA
                 CustomerName = customer,
                 ProductName = product,
                 Quantity = quantity,
-                Price = new Faker().Random.Decimal(10, 450)
+                Price = new Faker().Random.Decimal(10.0m, 450.99m)
                 // OrderDate не надо - по умолчанию текущая
             };
 
             // добавляем в коллекцию для DataGrid
-            ViewModel.AddOrder(message);
+            //ViewModel.AddOrder(message);
+            ViewModel.CurrentOrder = message;
 
             try
             {
@@ -192,10 +282,20 @@ namespace OrderProdClientA
         {
             context.Dispose();
         }
-        
+
         private void Hide_Click(object? sender, RoutedEventArgs e)
         {
             CCliWin.Hide();
+        }
+
+        private void ChatBoxCli_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            message = ChatBoxCli.Text;
+        }
+
+        private void CliMsgSendBtn_Click(object? sender, RoutedEventArgs e)
+        {
+            Task.Run(() => multicastSend(cts.Token));
         }
     }
     public class RabbitMQProducer
