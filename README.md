@@ -5,6 +5,7 @@
 
 ---
 ## Технологии и зависимости:
+- ADO.NET
 - RabbitMQ
 - Avalonia
 - SQLite
