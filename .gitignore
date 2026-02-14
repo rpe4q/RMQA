@@ -363,7 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # unused features
-./OrderConsServA/Converters
-./OrderProdClientA/Converters
 /OrderConsServA/Converters
 /OrderProdClientA/Converters
+/Models/User.cs
