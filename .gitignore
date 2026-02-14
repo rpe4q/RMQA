@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# unused features
+./OrderConsServA/Converters
+./OrderProdClientA/Converters
+/OrderConsServA/Converters
+/OrderProdClientA/Converters
