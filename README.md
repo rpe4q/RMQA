@@ -18,3 +18,4 @@
 - Visual Studio 2022
 - Документации с Avalonia и др.
 - Алиса AI
+- Avalonia DevTools
