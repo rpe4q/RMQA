@@ -18,6 +18,7 @@ namespace OrderConsServA
 
         [ObservableProperty]
         private string newMessageText;
+        object _producer = new RabbitMQProducer();
         public ICommand SendMessageCommand => new RelayCommand(SendMessage);
 
         public string[] ProductNames { get; set; }
@@ -51,6 +52,12 @@ namespace OrderConsServA
         public void AddOrder(OrderMessage order)
         {
             Orders.Add(order);
+        }
+
+        [RelayCommand]
+        public void DelOrder(OrderMessage order)
+        {
+            Orders.Remove(order);
         }
 
         public void LoadOrders(List<OrderMessage> orders)

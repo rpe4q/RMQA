@@ -5,6 +5,9 @@ namespace Models
     public partial class OrderMessage : ObservableObject // ⚠️ partial
     {
         [ObservableProperty]
+        private int id;
+
+        [ObservableProperty]
         private string? customerName; // Приватное поле без { get; set; }
 
         [ObservableProperty]

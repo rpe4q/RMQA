@@ -4,6 +4,8 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Bogus;
+using EasyNetQ.Management.Client;
+using EasyNetQ.Management.Client.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,11 +17,13 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static RabbitMQProducer;
 using BoxEnum = MsBox.Avalonia.Enums;
 
 namespace OrderConsServA
@@ -113,21 +117,21 @@ namespace OrderConsServA
         {
             //AvaloniaXamlLoader.Load(this);
             //Resources.Add("BoolToBrushConverter", new BoolToBrushConverter());
-            
+
             InitializeComponent();
-            
+
             context = new AppDbContext();
             context.Database.EnsureCreated();
-            
+
             _ = ServInit();
             _ = InitializeRabbitMQAsync();
-            
+
             ViewModel.ProductNames = [
-                "Latte", "Cappuccino", "Flat White", 
-                "Mocha", "Frappe", "Turkish", 
+                "Latte", "Cappuccino", "Flat White",
+                "Mocha", "Frappe", "Turkish",
                 "Espresso", "Americano", "Raf"];
             this.DataContext = ViewModel;
-            
+
             _ = LoadData();
             Task.Run(() => Listner(cts.Token));
         }
@@ -137,9 +141,9 @@ namespace OrderConsServA
                 .ConfigureServices((context, services) =>
                 {
                     services.AddHostedService(sp => new Worker(this));
+                    //services.AddSingleton<RabbitMQProducer>();
                 })
                 .Build();
-
             await host.RunAsync();
         }
         private async Task LoadData()
@@ -218,6 +222,78 @@ namespace OrderConsServA
             // Генерация заказа
             txtCustomer.Text = customerFaker;
             txtQuantity.Text = new Faker().Random.Int(1, 10).ToString();
+        }
+
+        // пока не работает
+        private void Del_Click(object? sender, RoutedEventArgs e)
+        {
+            _ = DClickTask();
+        }
+
+        private async Task DClickTask()
+        {
+            // Проверка DataGrid
+            if (DataGridOrders == null)
+            {
+                await ShowError("DataGrid не инициализирован");
+                return;
+            }
+
+            // Получение выбранной записи
+            var selectedOrder = DataGridOrders.SelectedItem as OrderMessage;
+
+            if (selectedOrder == null)
+            {
+                await ShowError("Выберите заказ для удаления");
+                return;
+            }
+
+            // Проверка producer
+            if (_producer == null)
+            {
+                await ShowError("Producer не инициализирован");
+                return;
+            }
+
+            // Создание сообщения для удаления
+            var deleteMessage = new DeleteMessage
+            {
+                Id = selectedOrder.Id
+            };
+
+            try
+            {
+                await _producer.SendDeleteMessage(deleteMessage);
+
+                // Удаление из DataGrid
+                DataGridOrders.SelectedItems.Remove(selectedOrder);
+
+                await ShowSuccess("Заказ успешно удалён!");
+            }
+            catch (Exception ex)
+            {
+                await ShowError($"Произошла ошибка: {ex.Message}");
+            }
+        }
+
+        private async Task ShowError(string message)
+        {
+            var errorBox = MessageBoxManager.GetMessageBoxStandard(
+                "Ошибка", message,
+                BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+            await errorBox.ShowAsync();
+        }
+
+        private async Task ShowSuccess(string message)
+        {
+            var successBox = MessageBoxManager.GetMessageBoxStandard(
+                "Успех", message,
+                BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Success);
+            await successBox.ShowAsync();
+        }
+
+        private void Mod_Click(object? sender, RoutedEventArgs e)
+        {
         }
 
         private void Send_Click(object? sender, RoutedEventArgs e)
@@ -325,7 +401,7 @@ namespace OrderConsServA
                 context.Database.EnsureCreated();
             }
 
-            private async void AppendLog(string message)
+            public async void AppendLog(string message)
             {
                 // Используем Dispatcher для безопасного обновления UI
                 await Dispatcher.UIThread.InvokeAsync(() =>

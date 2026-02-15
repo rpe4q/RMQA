@@ -166,7 +166,6 @@ namespace OrderProdClientA
 
                 _logger?.Information("Загружено {Count} заказов из БД", orderMessages.Count);
 
-                //ViewModel.LoadOrders(orderMessages);
             }
             catch (Exception ex)
             {
