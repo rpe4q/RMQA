@@ -20,6 +20,8 @@ namespace OrderConsServA
         private string newMessageText;
         public ICommand SendMessageCommand => new RelayCommand(SendMessage);
 
+        public string[] ProductNames { get; set; }
+
         public void AddMessage(string message, bool isUser = true)
         {
             ChatMessages.Add(new ChatMessage

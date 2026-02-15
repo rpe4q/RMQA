@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderConsServA", "OrderCons
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProdClientA", "OrderProdClientA\OrderProdClientA.csproj", "{4D11F7AB-C309-4439-9AAB-A844BFFB38DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RMQProd", "RMQProd\RMQProd.csproj", "{C623BF05-D029-4AE7-9B65-BCE6932AB03E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{4D11F7AB-C309-4439-9AAB-A844BFFB38DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D11F7AB-C309-4439-9AAB-A844BFFB38DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D11F7AB-C309-4439-9AAB-A844BFFB38DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C623BF05-D029-4AE7-9B65-BCE6932AB03E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C623BF05-D029-4AE7-9B65-BCE6932AB03E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C623BF05-D029-4AE7-9B65-BCE6932AB03E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C623BF05-D029-4AE7-9B65-BCE6932AB03E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

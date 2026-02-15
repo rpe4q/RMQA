@@ -120,7 +120,10 @@ namespace OrderProdClientA
             context.Database.EnsureCreated();
 
             Task.Run(() => Listner(cts.Token));
-            ViewModel.ProductNames = ["Latte", "Cappuccino", "Flat White", "Mocha", "Frappe", "Turkish", "Espresso", "Americano", "Raf"];
+            ViewModel.ProductNames = [
+                "Latte", "Cappuccino", "Flat White", 
+                "Mocha", "Frappe", "Turkish", 
+                "Espresso", "Americano", "Raf"];
             this.DataContext = ViewModel;
 
             // загрузка данных и привязка
@@ -179,7 +182,7 @@ namespace OrderProdClientA
         {
             try
             {
-                _producer = new RabbitMQProducer(_logger);
+                _producer = new RabbitMQProducer();
                 await _producer.InitializeAsync();
                 _logger.Information("Подключение к RabbitMQ установлено");
             }
@@ -205,7 +208,12 @@ namespace OrderProdClientA
             txtQuantity.Text = new Faker().Random.Int(1, 10).ToString();
         }
 
-        private async void Send_Click(object sender, RoutedEventArgs e)
+        private void Send_Click(object sender, RoutedEventArgs e)
+        {
+            _ = SClickTask();
+        }
+
+        private async Task SClickTask()
         {
             if (_producer == null)
             {
@@ -296,66 +304,6 @@ namespace OrderProdClientA
         private void CliMsgSendBtn_Click(object? sender, RoutedEventArgs e)
         {
             Task.Run(() => multicastSend(cts.Token));
-        }
-    }
-    public class RabbitMQProducer
-    {
-        private IConnection? _connection;
-        private IChannel? _channel;
-        private readonly ILogger? _logger;
-        public RabbitMQProducer(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public async Task InitializeAsync()
-        {
-            try
-            {
-                var factory = new ConnectionFactory { HostName = "localhost" };
-                _connection = await factory.CreateConnectionAsync();
-                _channel = await _connection.CreateChannelAsync();
-
-                await _channel.QueueDeclareAsync(
-                    queue: "order_queue",
-                    durable: false,
-                    exclusive: false,
-                    autoDelete: false,
-                    arguments: null);
-
-                _logger.Information("Канал создан и очередь 'order_queue' объявлена");
-            }
-            catch (Exception ex)
-            {
-                _logger.Fatal(ex, "Ошибка при инициализации RabbitMQ");
-                throw;
-            }
-        }
-        public async Task SendOrderMessage(OrderMessage message)
-        {
-            if (_channel is not { IsOpen: true })
-            {
-                _logger.Error("Попытка отправить сообщение, но канал закрыт");
-                throw new InvalidOperationException("Канал RabbitMQ не открыт");
-            }
-
-            try
-            {
-                var json = JsonConvert.SerializeObject(message);
-                var body = Encoding.UTF8.GetBytes(json);
-
-                await _channel.BasicPublishAsync(
-                    exchange: "",
-                    routingKey: "order_queue",
-                    body: body);
-
-                _logger.Information($"Заказ {json} отправлен в order_queue :-)");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Ошибка при публикации сообщения");
-                throw;
-            }
         }
     }
 }
