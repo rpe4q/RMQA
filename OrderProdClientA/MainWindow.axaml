@@ -44,10 +44,10 @@
                         <TextBlock Text="{Binding CurrentOrder.Quantity, StringFormat='{}{0} шт.'}" Margin="20,0,0,0"/>
         
                         <TextBlock Text="Цена: " Margin="10,10,0,0"/>
-                        <TextBlock Text="{Binding CurrentOrder.Price, StringFormat={}{0} Cr}" Margin="20,0,0,0"/>
+                        <TextBlock Text="{Binding CurrentOrder.Price, StringFormat={}{000.00} Cr}" Margin="20,0,0,0"/>
         
                         <TextBlock Text="Сумма: " Margin="10,10,0,0"/>
-                        <TextBlock Text="{Binding CurrentOrder.TotalPrice, StringFormat={}{0} Cr}" Margin="20,0,0,0"/>
+                        <TextBlock Text="{Binding CurrentOrder.TotalPrice, StringFormat={}{000.00} Cr}" Margin="20,0,0,0"/>
                     </StackPanel>
                 </StackPanel>
             </TabItem>

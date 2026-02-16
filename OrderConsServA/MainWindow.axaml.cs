@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Bogus;
+using Bogus.Extensions;
 using EasyNetQ.Management.Client;
 using EasyNetQ.Management.Client.Model;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.Hosting;
 using Models;
 using MsBox.Avalonia;
 using Newtonsoft.Json;
-using OrderConsServ.Converters;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
@@ -158,6 +158,7 @@ namespace OrderConsServA
 
                 var orderMessages = orders.Select(o => new OrderMessage
                 {
+                    Id = o.Customer?.Id ?? 0,
                     CustomerName = o.Customer?.Name ?? "Неизвестный",
                     ProductName = o.Product?.Name ?? "Неизвестный",
                     Price = o.Product?.Price ?? 0m,
@@ -224,55 +225,50 @@ namespace OrderConsServA
             txtQuantity.Text = new Faker().Random.Int(1, 10).ToString();
         }
 
-        // пока не работает
         private void Del_Click(object? sender, RoutedEventArgs e)
         {
-            _ = DClickTask();
+            _ = DGRTask(); // удаление только с DataGrid
         }
 
-        private async Task DClickTask()
+        private async Task DGRTask()
         {
-            // Проверка DataGrid
-            if (DataGridOrders == null)
-            {
-                await ShowError("DataGrid не инициализирован");
-                return;
-            }
-
-            // Получение выбранной записи
-            var selectedOrder = DataGridOrders.SelectedItem as OrderMessage;
-
-            if (selectedOrder == null)
-            {
-                await ShowError("Выберите заказ для удаления");
-                return;
-            }
-
-            // Проверка producer
-            if (_producer == null)
-            {
-                await ShowError("Producer не инициализирован");
-                return;
-            }
-
-            // Создание сообщения для удаления
-            var deleteMessage = new DeleteMessage
-            {
-                Id = selectedOrder.Id
-            };
-
             try
             {
-                await _producer.SendDeleteMessage(deleteMessage);
+                // Получаем выбранный элемент
+                var selectedOrder = DataGridOrders.SelectedItem as OrderMessage;
 
-                // Удаление из DataGrid
-                DataGridOrders.SelectedItems.Remove(selectedOrder);
+                if (selectedOrder == null)
+                {
+                    await ShowWarn("Выберите элемент для удаления");
+                    return;
+                }
 
-                await ShowSuccess("Заказ успешно удалён!");
+                // Получаем коллекцию
+                var collection = DataGridOrders.ItemsSource as ObservableCollection<OrderMessage>;
+
+                if (collection == null)
+                {
+                    await ShowError("Ошибка получения данных");
+                    return;
+                }
+
+                // не работает
+                /*
+                //int id = selectedOrder.Id;
+                var message = new DeleteMessage
+                {
+                    Id = id
+                };
+                await _producer.SendDeleteMessage(message);
+                */
+
+                collection.Remove(selectedOrder);
+
+                await ShowSuccess("Элемент удален");
             }
             catch (Exception ex)
             {
-                await ShowError($"Произошла ошибка: {ex.Message}");
+                await ShowError($"Ошибка: {ex.Message}");
             }
         }
 
@@ -281,6 +277,14 @@ namespace OrderConsServA
             var errorBox = MessageBoxManager.GetMessageBoxStandard(
                 "Ошибка", message,
                 BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Error);
+            await errorBox.ShowAsync();
+        }
+
+        private async Task ShowWarn(string message)
+        {
+            var errorBox = MessageBoxManager.GetMessageBoxStandard(
+                "!!!", message,
+                BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Warning);
             await errorBox.ShowAsync();
         }
 
@@ -294,6 +298,7 @@ namespace OrderConsServA
 
         private void Mod_Click(object? sender, RoutedEventArgs e)
         {
+            
         }
 
         private void Send_Click(object? sender, RoutedEventArgs e)
@@ -310,9 +315,10 @@ namespace OrderConsServA
                     BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Warning);
                 await ServNonInitBox.ShowAsync();
             }
-
+            
             var customer = txtCustomer.Text.Trim();
             var product = txtProduct.Text.Trim();
+            int id = 0;
 
             if (customer == "" || customer == null)
             {
@@ -345,6 +351,7 @@ namespace OrderConsServA
 
             var message = new OrderMessage
             {
+                Id = id++,
                 CustomerName = customer,
                 ProductName = product,
                 Quantity = quantity,
@@ -460,6 +467,19 @@ namespace OrderConsServA
                     throw;
                 }
             }
+            private decimal GenerateRandomPrice()
+            {
+                Random random = new Random();
+                decimal minPrice = 10m;
+                decimal maxPrice = 450.99m;
+
+                decimal randomPrice = decimal.Round(
+                    minPrice + (maxPrice - minPrice) * (decimal)random.NextDouble(),
+                    2);
+
+                // Дополнительная проверка на случай погрешности
+                return randomPrice > maxPrice ? maxPrice : randomPrice;
+            }
             private async Task SaveOrderAsync(OrderMessage message, CancellationToken ct)
             {
                 var customer = await context.Customers
@@ -486,7 +506,7 @@ namespace OrderConsServA
                     product = new Product
                     {
                         Name = message.ProductName,
-                        Price = new Random().Next(100, 1000)
+                        Price = GenerateRandomPrice()
                     };
                     context.Products.Add(product);
                     await context.SaveChangesAsync(ct);

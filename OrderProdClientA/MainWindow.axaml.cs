@@ -3,11 +3,11 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Bogus;
+using Bogus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using MsBox.Avalonia;
 using Newtonsoft.Json;
-using OrderProdClientA.Converters;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
@@ -224,6 +224,7 @@ namespace OrderProdClientA
 
             var customer = txtCustomer.Text.Trim();
             var product = txtProduct.Text.Trim();
+            int id = 0;
 
             if (customer == "" || customer == null)
             {
@@ -256,10 +257,11 @@ namespace OrderProdClientA
 
             var message = new OrderMessage
             {
+                Id = id++,
                 CustomerName = customer,
                 ProductName = product,
                 Quantity = quantity,
-                Price = new Faker().Random.Decimal(10.0m, 450.99m)
+                Price = new Faker().Random.Decimal2(10.0m, 450.99m)
                 // OrderDate не надо - по умолчанию текущая
             };
 

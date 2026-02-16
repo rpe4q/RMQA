@@ -35,7 +35,7 @@ public class RabbitMQProducer
         }
         catch (Exception ex)
         {
-            throw ex.InnerException;
+            throw new Exception($"Ошибка инициализации\n{ex.Message}");
         }
     }
     public async Task SendOrderMessage(OrderMessage message)
@@ -61,7 +61,7 @@ public class RabbitMQProducer
         catch (Exception ex)
         {
             //_logger.Error(ex, "Ошибка при публикации сообщения");
-            throw;
+            throw new Exception("Ошибка при публикации сообщения");
         }
     }
     public async Task SendDeleteMessage(DeleteMessage message)
@@ -70,6 +70,7 @@ public class RabbitMQProducer
         await SendMessageAsync(message, _settings.DeleteQueueName);
     }
 
+    
     // Общий метод для отправки сообщений
     private async Task SendMessageAsync(object message, string routingKey)
     {
@@ -91,8 +92,7 @@ public class RabbitMQProducer
         }
         catch (Exception ex)
         {
-            // Логирование ошибки
-            throw;
+            throw new Exception("Ошибка при публикации сообщения");
         }
     }
 
@@ -100,6 +100,8 @@ public class RabbitMQProducer
     {
         public int Id { get; set; }
         public string CustomerName { get; set; }
+        public string ProductName { get; set; }
+        public int Quantity { get; set; }
         public string Type { get; set; } = "DELETE";
     }
 }
