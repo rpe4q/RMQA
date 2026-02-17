@@ -265,8 +265,6 @@ namespace OrderProdClientA
                 // OrderDate не надо - по умолчанию текущая
             };
 
-            // добавляем в коллекцию для DataGrid
-            //ViewModel.AddOrder(message);
             ViewModel.CurrentOrder = message;
 
             try

@@ -38,6 +38,7 @@ namespace OrderConsServA
         private RabbitMQProducer? _producer;
         private CancellationTokenSource cts = new CancellationTokenSource();
         Process ModPrc = new();
+        Process LogPrc = new();
         static async Task multicastSend(CancellationToken token)
         {
             var factory = new ConnectionFactory { HostName = "localhost" };
@@ -117,6 +118,7 @@ namespace OrderConsServA
         }
         public MainWindow()
         {
+            // это вроде для чата
             //AvaloniaXamlLoader.Load(this);
             //Resources.Add("BoolToBrushConverter", new BoolToBrushConverter());
 
@@ -136,8 +138,13 @@ namespace OrderConsServA
 
             _ = LoadData();
             Task.Run(() => Listner(cts.Token));
-            
-            ModPrc.StartInfo = new ProcessStartInfo("explorer.exe", "C:\\Users\\acer\\Documents\\src\\RMQA\\ordersdb");
+
+            ModPrc.StartInfo = new ProcessStartInfo(
+                "explorer.exe",
+                "C:\\Users\\acer\\Documents\\src\\RMQA\\ordersdb");
+            LogPrc.StartInfo = new ProcessStartInfo(
+                "explorer.exe",
+                "C:\\Users\\acer\\Documents\\src\\RMQA\\OrderConsServA\\bin\\Debug\\net9.0\\logs");
         }
         public async Task ServInit()
         {
@@ -300,15 +307,11 @@ namespace OrderConsServA
             await successBox.ShowAsync();
         }
 
-        private void Mod_Click(object? sender, RoutedEventArgs e)
-        {
-            ModPrc.Start();
-        }
+        private void Mod_Click(object? sender, RoutedEventArgs e) => ModPrc.Start();
 
-        private void Send_Click(object? sender, RoutedEventArgs e)
-        {
-            _ = SClickTask();
-        }
+        private void LogViewBtn_Click(object? sender, RoutedEventArgs e) => LogPrc.Start();
+
+        private void Send_Click(object? sender, RoutedEventArgs e) => _ = SClickTask();
 
         private async Task SClickTask()
         {
@@ -319,7 +322,7 @@ namespace OrderConsServA
                     BoxEnum.ButtonEnum.Ok, BoxEnum.Icon.Warning);
                 await ServNonInitBox.ShowAsync();
             }
-            
+
             var customer = txtCustomer.Text.Trim();
             var product = txtProduct.Text.Trim();
             int id = 0;

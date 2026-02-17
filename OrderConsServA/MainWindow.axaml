@@ -107,11 +107,18 @@
                 <Grid.RowDefinitions>
 					<RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="5"/>
                 </Grid.RowDefinitions>
 				<TextBox x:Name="ConsoleBox" Grid.Row="0" Grid.Column="0"
                          FontFamily="Courier New" TextWrapping="Wrap"
                          FontWeight="DemiBold" FontSize="16"/>
+                <Button x:Name="LogViewBtn" Grid.Row="2"
+                        Content="Посмотреть логи" Click="LogViewBtn_Click" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                        HorizontalContentAlignment="Center"
+                        Margin="0,10,0,10">
+                    </Button>
             </Grid>
         </TabItem>
         <TabItem Header="Связь">
