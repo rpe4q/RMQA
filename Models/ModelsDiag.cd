@@ -1,35 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="Models.AppDbContext" Collapsed="true">
-    <Position X="6.5" Y="1.5" Width="1.5" />
+    <Position X="3.75" Y="1" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
       <FileName>AppDbContext.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Models.Customer" Collapsed="true">
-    <Position X="8.25" Y="1.5" Width="1.5" />
+    <Position X="5.5" Y="1" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAACAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Customer.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Models.Order" Collapsed="true">
-    <Position X="10" Y="1.5" Width="1.5" />
+    <Position X="7.25" Y="1" Width="1.5" />
     <TypeIdentifier>
       <HashCode>GAECAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAgAAAAAA=</HashCode>
       <FileName>Order.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Models.OrderMessage" Collapsed="true">
-    <Position X="6.5" Y="2.5" Width="1.5" />
+    <Position X="3.75" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAABAAAAAAAAAAAAAAAAAAAAAAAAQECAAAgAAAgAAgA=</HashCode>
       <FileName>OrderMessage.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Models.Product" Collapsed="true">
-    <Position X="8.25" Y="2.5" Width="1.5" />
+    <Position X="5.5" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAQAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Product.cs</FileName>

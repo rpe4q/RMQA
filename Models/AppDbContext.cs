@@ -8,6 +8,6 @@ public class AppDbContext : DbContext
     public DbSet<Customer> Customers { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite($"Data Source=../../../../orders.db");
+        optionsBuilder.UseSqlite($"Data Source=../../../../ordersdb/orders.db");
     }
 }
