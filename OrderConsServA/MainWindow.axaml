@@ -58,13 +58,16 @@
                             Grid.Row="0" Grid.Column="0"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
-                    <Button Content="Удалить" Click="Del_Click"
+                    <Button Content="Отправить" Click="Send_Click"
                             Grid.Row="0" Grid.Column="1"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
-                    <Button Content="Отправить" Click="Send_Click"
+                    <Button Content="Удалить" Click="Del_Click"
                             Grid.Row="1" Grid.Column="0"
-                            Grid.ColumnSpan="2"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    <Button Content="Изменить" Click="Mod_Click"
+                            Grid.Row="1" Grid.Column="1"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                     </Grid>
@@ -93,7 +96,7 @@
                         <MenuItem Header="Свернуть в трей" Click="Hide_Click"/>
                         <Separator />
                         <MenuItem Header="Удалить" Click="Del_Click"/> <!-- только с DataGrid -->
-                        <MenuItem Header="Изменить" Click="Mod_Click"/> <!-- не реализован -->
+                        <MenuItem Header="Изменить" Click="Mod_Click"/>
                     </ContextMenu>
                     </DataGrid.ContextMenu> 
                 </DataGrid>

@@ -18,6 +18,7 @@ using RabbitMQ.Client.Events;
 using Serilog;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -36,6 +37,7 @@ namespace OrderConsServA
         delegate void AppendText(string text);
         private RabbitMQProducer? _producer;
         private CancellationTokenSource cts = new CancellationTokenSource();
+        Process ChgPrc = new();
         static async Task multicastSend(CancellationToken token)
         {
             var factory = new ConnectionFactory { HostName = "localhost" };
@@ -134,6 +136,8 @@ namespace OrderConsServA
 
             _ = LoadData();
             Task.Run(() => Listner(cts.Token));
+            
+            ChgPrc.StartInfo = new ProcessStartInfo("explorer.exe", "C:\\Users\\acer\\Documents\\src\\RMQA");
         }
         public async Task ServInit()
         {
@@ -298,7 +302,7 @@ namespace OrderConsServA
 
         private void Mod_Click(object? sender, RoutedEventArgs e)
         {
-            
+            ChgPrc.Start();
         }
 
         private void Send_Click(object? sender, RoutedEventArgs e)
