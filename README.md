@@ -16,6 +16,7 @@
 
 ## Инструменты:
 - Visual Studio 2022
+- draw.io
 - Документации с Avalonia и др.
 - Алиса AI
 - Avalonia DevTools
